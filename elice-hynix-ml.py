@@ -35,20 +35,24 @@ def preprocess_data(df_train, df_test):
     }
 
     # TODO: [지시사항 1-A번] 입력 데이터를 표준화합니다.
-    X_mean = None
-    X_std = None
+    X_mean = np.mean(train_data["X"])
+    X_std = np.std(train_data["X"])
 
-    X_train = None
-    X_train = X_train.reshape(-1, 1)
-    X_test = None
-    X_test = X_test.reshape(-1, 1)
+    X_train = train_data["X"] - X_mean
+    X_train = X_train / X_std
+
+    X_test = test_data["X"] - X_mean
+    X_test = X_test / X_std
 
     # TODO: [지시사항 1-B번] 출력 데이터를 표준화합니다.
-    y_mean = None
-    y_std = None
+    y_mean = np.mean(train_data["y"], axis=0)
+    y_std = np.std(train_data["y"], axis=0)
 
-    y_train = None
-    y_test = None
+    y_train = train_data["y"] - y_mean
+    y_train = y_train / y_std
+
+    y_test = test_data["y"] - y_mean
+    y_test = y_test / y_std
 
     return X_train, X_test, y_train, y_test
 
@@ -58,16 +62,15 @@ def process_time_series_data(X, y, num_sequences, stride=1):
     for i in range(num_sequences):
         # TODO: [지시사항 2-A번] 지시사항에 나오는 시계열 데이터 변환 원리에 따라
         # X_ array에 sequence로 구분한 데이터를 추가합니다.
-        X_.append(None)
+        start_idx = i * stride
+        end_idx = start_idx + num_sequences
+        X_.append(X[start_idx:end_idx])
 
     # TODO: [지시사항 2-B번] 지시사항에 나오는 시계열 데이터 변환 원리에 따라
     # window size로 구분된 데이터를 만듭니다.
-
-    X_ = None
-    
-    # TODO: [지시사항 2-C번] target 데이터인 y_는 window size로 구분된 데이터의 마지막 시점에 대응합니다.
-    y_ = None
-
+    y_ = []
+    for X_seq in X_:
+        y_.append(y[X_seq[-1]])
 
     return X_, y_
 
@@ -77,9 +80,9 @@ class LSTMModel(nn.Module):
         super().__init__()
 
         # TODO: [지시사항 3번] LSTM 모델을 만듭니다.
-        self.lstm1 = None
-        self.lstm2 = None
-        self.linear = None
+        self.lstm1 = nn.LSTM(num_features, 128)
+        self.lstm2 = nn.LSTM(128, 64)
+        self.linear = nn.Linear(64, 5)
 
     def forward(self, x):
         x, _ = self.lstm1(x)
@@ -95,9 +98,9 @@ class GRUModel(nn.Module):
         super().__init__()
 
         # TODO: [지시사항 4번] GRU 모델을 만듭니다.
-        self.gru1 = None
-        self.gru2 = None
-        self.linear = None
+        self.gru1 = nn.GRU(num_features, 128)
+        self.gru2 = nn.GRU(128, 64)
+        self.linear = nn.Linear(64, 5)
 
     def forward(self, x):
         x, _ = self.gru1(x)
